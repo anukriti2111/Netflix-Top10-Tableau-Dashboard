@@ -1,1 +1,14 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.ipynb_checkpoints/
+
+# Python
+.venv/
+__pycache__/
+
+# Tableau caches (keep workbooks, ignore junk)
+*.hyper.tmp
+Tableau Repository/Logs/
+Tableau Repository/Temp/
 
