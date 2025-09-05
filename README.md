@@ -16,39 +16,68 @@ All data-prep is done in Python (`pandas`), and the final workbook is styled in 
 ---
 
 ## 2 · Folder Structure
-netflix-top10-tableau-dashboard/
-├─ data/ # cleaned CSVs (<100 MB total)
-│ ├─ weekly_clean.csv
-│ ├─ country_clean.csv
-│ └─ platforms_union.csv
-├─ notebooks/
-│ └─ Netflix_Clean.ipynb
-├─ src/
-│ └─ prep_netflix.py # end-to-end ETL script
+```text
+Netflix-Top10-Tableau-Dashboard/
+├─ data/
+│  ├─ clean/
+│  │  ├─ global_weekly_clean.csv
+│  │  ├─ most_popular_clean.csv
+│  │  ├─ all_weeks_by_country_clean.csv
+│  │  ├─ netflix_full_clean.csv
+│  │  ├─ movies_all_enriched.csv
+│  │  └─ shows_all_enriched.csv
+│  └─ raw/                      # (optional) raw source CSVs
+├─ tableau/
+│  ├─ Netflix_Dashboard.twb     # linked workbook (small)
+│  └─ Netflix_Dashboard.twbx    # packaged (may be large)
 ├─ screenshots/
-│ ├─ dashboard.png
-│ └─ weekly_trend.png
-├─ Netflix_Dashboard.twbx # finished Tableau workbook
-├─ README.md
-└─ LICENSE # MIT
+│  ├─ dashboard.png
+│  └─ weekly_trend.png
+├─ notebooks/
+│  └─ Netflix_Clean.ipynb
+├─ src/
+│  └─ prep_netflix.py
+├─ docs/
+│  └─ report.pdf
+└─ README.md
+```
 
 
 ---
 
-## 3 · Data Sources
-| File | Origin | Notes |
-|------|--------|-------|
-| `all-weeks-global.csv` | [top10.netflix.com](https://top10.netflix.com) | weekly global list & hours |
-| `all-weeks-countries.csv` | Netflix | Top-10 per country |
-| `netflix_full.csv` | Kaggle (IMDb scrape) | catalog + ratings |
-| `movies_all.csv`, `shows_all.csv` | Kaggle (JustWatch) | Netflix/Hulu/Prime/Disney+ flags |
+## 3) Data Files in `/data/clean`
+| File | What it contains |
+|---|---|
+| `global_weekly_clean.csv` | Weekly global Top-10 with hours viewed |
+| `most_popular_clean.csv` | Most-popular titles (first 28 days hours) |
+| `all_weeks_by_country_clean.csv` | Country-level Top-10 coverage |
+| `netflix_full_clean.csv` | Catalogue + IMDb ratings/votes, genres |
+| `movies_all_enriched.csv` | Movie availability by platform |
+| `shows_all_enriched.csv` | Show availability by platform |
+
+**Join key used in Tableau:** `Title_key` (or `Show Title Key`) – lowercase/trimmed titles.
 
 ---
 
-## 4 · Quick Start
-### Requirements
-```bash
-python 3.10+
-pip install pandas
-# Tableau Public or Desktop installed
+## 4) Rebuilding in Tableau (quick)
+1. **Connect → Text file** and add the six CSVs from `/data/clean`.
+2. Rename logical tables: *Catalogue*, *Weekly*, *CountryWeekly*, *Popular28*, *Movies*, *Shows*.
+3. (Optional) **Union Movies + Shows** → **Platforms**.
+4. Create relationships:
+   - Catalogue ↔ Weekly : `Title_key` ↔ `Show Title Key`
+   - Catalogue ↔ CountryWeekly : `Title_key` ↔ `Show Title Key`
+   - Catalogue ↔ Popular28 : `Title_key` ↔ `Show Title Key`
+   - Platforms ↔ Weekly : `Title_key` ↔ `Show Title Key`
+
+---
+
+## 5) Calculated Fields (used in the viz)
+- **Is Latest Week (Wk)**: `[Week] = { FIXED : MAX([Week]) }`  
+- **Country Title Count**: `COUNTD([Show Title Key])`  
+- **IMDb Votes (k)**: `ZN([imdbNumVotes]) / 1000`  
+- **Platform Count**: `[Netflix] + [Hulu] + [Prime Video] + [Disney+]`
+
+## 6) Credits
+Netflix Top-10 data · IMDb ratings · Platform availability (Kaggle/JustWatch).  
+Built with Tableau Public and Python/pandas.
 
